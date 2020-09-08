@@ -433,6 +433,7 @@
 };
 
 &gpu {
+	compatible = "rockchip,px30-mali", "arm,mali-midgard";
 	mali-supply = <&vdd_logic>;
 	status = "okay";
 	operating-points-v2 = <&gpu_opp_table>;
