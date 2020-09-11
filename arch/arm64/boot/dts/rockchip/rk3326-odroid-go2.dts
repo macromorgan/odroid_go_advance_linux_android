@@ -303,7 +303,7 @@
                 record-size = <0x0 0x20000>;
                 console-size = <0x0 0x80000>;
                 ftrace-size = <0x0 0x00000>;
-                pmsg-size = <0x0 0x00000>;
+                pmsg-size = <0x0 0x50000>;
                 memory-region = <&ramoops_mem>;
         };
 
