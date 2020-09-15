@@ -32,7 +32,7 @@
 #include <mali_midg_regmap.h>
 #include <linux/atomic.h>
 
-#include <mali_kbase_pm_defs.h>
+#include "backend/gpu/mali_kbase_pm_defs.h"
 
 /* Forward definition - see mali_kbase.h */
 struct kbase_device;

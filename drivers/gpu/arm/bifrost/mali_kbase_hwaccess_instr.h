@@ -29,7 +29,7 @@
 #ifndef _KBASE_HWACCESS_INSTR_H_
 #define _KBASE_HWACCESS_INSTR_H_
 
-#include <mali_kbase_instr_defs.h>
+#include "backend/gpu/mali_kbase_instr_defs.h"
 
 /**
  * struct kbase_instr_hwcnt_enable - Enable hardware counter collection.

@@ -31,7 +31,7 @@
 #define _KBASE_CONFIG_DEFAULTS_H_
 
 /* Include mandatory definitions per platform */
-#include <mali_kbase_config_platform.h>
+#include "platform/rk/mali_kbase_config_platform.h"
 
 /**
 * Boolean indicating whether the driver is configured to be secure at

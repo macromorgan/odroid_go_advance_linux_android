@@ -37,7 +37,7 @@
 #include <mali_base_hwconfig_issues.h>
 #include <mali_kbase_mem_lowlevel.h>
 #include <mali_kbase_mmu_hw.h>
-#include <mali_kbase_instr_defs.h>
+#include "backend/gpu/mali_kbase_instr_defs.h"
 #include <mali_kbase_pm.h>
 #include <mali_kbase_gpuprops_types.h>
 #include <mali_kbase_hwcnt_backend_gpu.h>

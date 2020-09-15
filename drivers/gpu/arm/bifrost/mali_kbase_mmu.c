@@ -33,7 +33,7 @@
 #include <mali_kbase.h>
 #include <mali_midg_regmap.h>
 #include <mali_kbase_tracepoints.h>
-#include <mali_kbase_instr_defs.h>
+#include "backend/gpu/mali_kbase_instr_defs.h"
 #include <mali_kbase_debug.h>
 
 #define beenthere(kctx, f, a...)  dev_dbg(kctx->kbdev->dev, "%s:" f, __func__, ##a)

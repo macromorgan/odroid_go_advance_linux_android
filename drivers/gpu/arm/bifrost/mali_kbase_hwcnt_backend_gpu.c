@@ -24,7 +24,7 @@
 #include "mali_kbase_hwcnt_gpu.h"
 #include "mali_kbase_hwcnt_types.h"
 #include "mali_kbase.h"
-#include "mali_kbase_pm_ca.h"
+#include "backend/gpu/mali_kbase_pm_ca.h"
 #include "mali_kbase_hwaccess_instr.h"
 #ifdef CONFIG_MALI_BIFROST_NO_MALI
 #include "backend/gpu/mali_kbase_model_dummy.h"

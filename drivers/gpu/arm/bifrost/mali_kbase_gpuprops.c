@@ -32,7 +32,7 @@
 #include <mali_kbase_hwaccess_gpuprops.h>
 #include "mali_kbase_ioctl.h"
 #include <linux/clk.h>
-#include <mali_kbase_pm_internal.h>
+#include <backend/gpu/mali_kbase_pm_internal.h>
 #include <linux/of_platform.h>
 #include <linux/moduleparam.h>
 
