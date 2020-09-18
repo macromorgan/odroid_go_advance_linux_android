@@ -18,13 +18,8 @@
 # SPDX-License-Identifier: GPL-2.0
 #
 #
-#
-choice
-	prompt "Mali bifrost driver"
 
-config MALI_BIFROST_FOR_ANDROID
-	bool "Mali Bifrost for Android"
 
-endchoice
-
-source "drivers/gpu/arm/bifrost/Kconfig"
+menu "ARM GPU Configuration"
+source "drivers/gpu/arm/midgard/Kconfig"
+endmenu
