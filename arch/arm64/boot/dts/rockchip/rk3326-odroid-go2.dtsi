@@ -228,15 +228,6 @@
 		};
 	};
 
-	gpu_protected_memory_allocator: protected-memory-allocator {
-		compatible = "arm,protected-memory-allocator";
-		memory-region = <&mali_protected>;
-	};
-
-        gpu_physical_memory_group_manager: physical-memory-group-manager {
-		compatible = "arm,physical-memory-group-manager";
-        };
-
 	leds: gpio-leds {
 		compatible = "gpio-leds";
 		pinctrl-names = "default";
@@ -330,13 +321,7 @@
                         reg = <0x0 0x110000 0x0 0xf0000>;
                         reg-names = "ramoops_mem";
                 };
-
-		mali_protected: mali_protected@c0000000 {
-			compatible = "mali-reserved";
-			reg = <0x0 0xc0000000 0x0 0x1000000>;
-		};
         };
-
 };
 
 &cpu0 {
@@ -376,15 +361,6 @@
         logo-memory-region = <&drm_logo>;
 
         route {
-
-                route-lvds {
-                        status = "disabled";
-                        logo,uboot = "logo.bmp";
-                        logo,kernel = "logo_kernel.bmp";
-                        logo,mode = "center";
-                        charge_logo,mode = "center";
-                        connect = <&vopb_out_lvds>;
-                };
 
                 route-dsi {
                         status = "okay";
@@ -447,16 +423,9 @@
 };
 
 &gpu {
-	compatible = "rockchip,px30-mali", "arm,mali-midgard";
 	mali-supply = <&vdd_logic>;
 	status = "okay";
 	operating-points-v2 = <&gpu_opp_table>;
-	interrupts =	<GIC_SPI 47 IRQ_TYPE_LEVEL_HIGH>,
-			<GIC_SPI 46 IRQ_TYPE_LEVEL_HIGH>,
-			<GIC_SPI 45 IRQ_TYPE_LEVEL_HIGH>;
-	interrupt-names = "JOB", "MMU", "GPU";
-	physical-memory-group-manager = <&gpu_physical_memory_group_manager>;
-	protected-memory-allocator = <&gpu_protected_memory_allocator>;
 };
 
 &i2c0 {
@@ -884,6 +853,9 @@
 &vopb_mmu {
 	status = "okay";
 };
+
+/delete-node/ &lvds;
+/delete-node/ &vopb_out_lvds;
 
 &pinctrl {
 	btns {
