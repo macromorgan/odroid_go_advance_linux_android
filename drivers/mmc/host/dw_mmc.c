@@ -2994,7 +2994,7 @@ static void dw_mci_cto_timer(struct timer_list *t)
 	pending = mci_readl(host, MINTSTS); /* read-only mask reg */
 	if (pending & (DW_MCI_CMD_ERROR_FLAGS | SDMMC_INT_CMD_DONE)) {
 		/* The interrupt should fire; no need to act but we can warn */
-		dev_warn(host->dev, "Unexpected interrupt latency\n");
+		dev_info(host->dev, "Unexpected interrupt latency\n");
 		goto exit;
 	}
 	if (test_bit(EVENT_CMD_COMPLETE, &host->pending_events)) {
