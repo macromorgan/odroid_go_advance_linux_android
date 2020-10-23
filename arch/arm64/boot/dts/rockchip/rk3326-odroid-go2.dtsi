@@ -78,13 +78,12 @@
 		nvmem-cell-names = "id";
 	};
 
-        firmware {
-
-                optee {
-                        compatible = "linaro,optee-tz";
-                        method = "smc";
-                };
-        };
+	firmware {
+		sdei {
+			compatible	= "arm,sdei-1.0";
+			method		= "smc";
+		};
+	};
 
 	gpio_keys: gpio-keys {
 		compatible = "gpio-keys";
@@ -312,11 +311,6 @@
                 #size-cells = <2>;
                 ranges;
 
-                drm_logo: drm-logo@00000000 {
-                        compatible = "rockchip,drm-logo";
-                        reg = <0x0 0x0 0x0 0x0>;
-                };
-
                 ramoops_mem: region@110000 {
                         reg = <0x0 0x110000 0x0 0xf0000>;
                         reg-names = "ramoops_mem";
@@ -358,16 +352,11 @@
         status = "okay";
         ports = <&vopb_out>;
         status = "okay";
-        logo-memory-region = <&drm_logo>;
 
         route {
 
                 route-dsi {
                         status = "okay";
-                        logo,uboot = "logo.bmp";
-                        logo,kernel = "logo_kernel.bmp";
-                        logo,mode = "center";
-                        charge_logo,mode = "center";
                         connect = <&vopb_out_dsi>;
                 };
 
