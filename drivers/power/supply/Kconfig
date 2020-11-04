@@ -774,4 +774,11 @@ config RN5T618_POWER
 	  This driver can also be built as a module. If so, the module will be
 	  called rn5t618_power.
 
+config CHARGER_RK817
+	tristate "RK817 Charger driver"
+	depends on MFD_RK808
+	help
+	  If you say yes here you will get support for the charger of RK817 PMIC.
+	  This driver can give support for Rk817 Charger Interface.
+
 endif # POWER_SUPPLY
