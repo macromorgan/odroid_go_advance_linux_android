@@ -58,6 +58,18 @@
                 stdout-path = "serial2:115200n8";
         };
 
+	crypto: crypto@ff0b0000 {
+		compatible = "rockchip,rk3288-crypto";
+		reg = <0x0 0xff0b0000 0x0 0x4000>;
+		interrupts = <GIC_SPI 82 IRQ_TYPE_LEVEL_HIGH>;
+		clocks = <&cru ACLK_CRYPTO >, <&cru HCLK_CRYPTO >,
+			<&cru SCLK_CRYPTO>, <&cru SCLK_CRYPTO_APK>;
+		clock-names = "aclk", "hclk", "sclk", "apb_pclk";
+		resets = <&cru SRST_CRYPTO>;
+		reset-names = "crypto-rst";
+		status = "okay";
+	};
+
         core_grf: syscon@ff148000 {
                 compatible = "syscon", "simple-mfd";
                 reg = <0x0 0xff148000 0x0 0x1000>;
@@ -79,9 +91,9 @@
 	};
 
 	firmware {
-		sdei {
-			compatible	= "arm,sdei-1.0";
-			method		= "smc";
+		optee {
+			compatible = "linaro,optee-tz";
+			method = "smc";
 		};
 	};
 
@@ -270,22 +282,6 @@
 		vin-supply = <&vccsys>;
 	};
 
-	rng: rng@ff0b0000 {
-		compatible = "rockchip,cryptov2-rng";
-		reg = <0x0 0xff0b0000 0x0 0x4000>;
-		clocks = <&cru SCLK_CRYPTO>, <&cru SCLK_CRYPTO_APK>,
-			<&cru ACLK_CRYPTO>, <&cru HCLK_CRYPTO>;
-		clock-names = "clk_crypto", "clk_crypto_apk",
-				"aclk_crypto", "hclk_crypto";
-		assigned-clocks = <&cru SCLK_CRYPTO>, <&cru SCLK_CRYPTO_APK>,
-					<&cru ACLK_CRYPTO>, <&cru HCLK_CRYPTO>;
-		assigned-clock-rates = <150000000>, <150000000>,
-					<200000000>, <100000000>;
-		resets = <&cru SRST_CRYPTO>;
-		reset-names = "reset";
-		status = "okay";
-	};
-
         rk817-sound {
                 compatible = "simple-audio-card";
                 simple-audio-card,format = "i2s";
@@ -343,6 +339,43 @@
 
 &cpu3 {
 	cpu-supply = <&vdd_arm>;
+};
+
+&cpu0_opp_table {
+	rockchip,temp-hysteresis = <5000>;
+	rockchip,low-temp = <0>;
+	rockchip,low-temp-min-volt = <1000000>;
+	rockchip,low-temp-adjust-volt = <
+		/* MHz    MHz    uV */
+		0      1512   50000
+	>;
+
+	clocks = <&cru PLL_APLL>;
+	rockchip,avs-scale = <4>;
+	rockchip,max-volt = <1350000>;
+	rockchip,evb-irdrop = <25000>;
+	nvmem-cells = <&cpu_leakage>, <&performance>;
+	nvmem-cell-names = "cpu_leakage", "performance";
+	rockchip,bin-scaling-sel = <
+		0		13
+		1		15
+	>;
+
+	rockchip,pvtm-voltage-sel = <
+		0	50000	0
+		50001	54000	1
+		54001	60000	2
+		60001	99999	3
+	>;
+	rockchip,pvtm-freq = <408000>;
+	rockchip,pvtm-volt = <1000000>;
+	rockchip,pvtm-ch = <0 0>;
+	rockchip,pvtm-sample-time = <1000>;
+	rockchip,pvtm-number = <10>;
+	rockchip,pvtm-error = <1000>;
+	rockchip,pvtm-ref-temp = <40>;
+	rockchip,pvtm-temp-prop = <(-56) (-56)>;
+	rockchip,thermal-zone = "soc-thermal";	
 };
 
 &cru {
