@@ -164,6 +164,11 @@ config JOYSTICK_MAGELLAN
 	  To compile this driver as a module, choose M here: the
 	  module will be called magellan.
 
+config JOYSTICK_ODROIDGO2
+	tristate "ODROIDGO2-Advance joypad driver"
+	help
+	  Made for ODROIDGO2-Advance.
+
 config JOYSTICK_SPACEORB
 	tristate "SpaceTec SpaceOrb/Avenger 6dof controllers"
 	select SERIO

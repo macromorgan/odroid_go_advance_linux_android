@@ -5,7 +5,7 @@
 
 #include "rk3326-odroid-go2.dtsi"
 
-&gpio_keys {
+&joypad {
 	sw20 {
 		gpios = <&gpio3 RK_PB7 GPIO_ACTIVE_LOW>;
 		label = "TOP-LEFT2";

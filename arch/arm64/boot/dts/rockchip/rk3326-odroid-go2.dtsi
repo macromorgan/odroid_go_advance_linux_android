@@ -85,10 +85,21 @@
 		};
 	};
 
-	gpio_keys: gpio-keys {
-		compatible = "gpio-keys";
+	joypad: odroidgo2-joypad {
+		compatible = "odroidgo2-joypad";
 		pinctrl-names = "default";
 		pinctrl-0 = <&btn_pins>;
+		io-channel-names = "joy_x", "joy_y";
+		io-channels = <&saradc 1>, <&saradc 2>;
+		button-adc-count = <2>;
+		button-adc-scale = <2>;
+		button-adc-deadzone = <20>;
+		button-adc-x-range = <1800>;
+		button-adc-y-range = <1800>;
+		button-adc-fuzz = <32>;
+		button-adc-flat = <32>;
+		poll-interval = <10>;
+		autorepeat;
 
 		/*
 		 *      *** ODROIDGO2-Advance Switch layout ***
