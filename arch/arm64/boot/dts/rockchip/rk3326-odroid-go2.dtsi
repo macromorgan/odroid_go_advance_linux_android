@@ -323,6 +323,55 @@
                         reg-names = "ramoops_mem";
                 };
         };
+
+        vdec: video-codec@ff440000 {
+                compatible = "rockchip,px30-vdec","rockchip,rk3399-vdec";
+		reg = <0x0 0xff440000 0x0 0x400>;
+                interrupts = <GIC_SPI 49 IRQ_TYPE_LEVEL_HIGH>;
+                clocks = <&cru ACLK_VPU>, <&cru HCLK_VPU>,
+                        <&cru SCLK_CORE_VPU>;
+                clock-names = "axi", "ahb", "core";
+                power-domains = <&power PX30_PD_VPU>;
+                iommus = <&vdec_mmu>;
+                status = "okay";
+        };
+
+        vdec_mmu: iommu@ff440440 {
+                compatible = "rockchip,iommu";
+                reg = <0x0 0xff440440 0x0 0x40>, <0x0 0xff440480 0x0 0x40>;
+                interrupts = <GIC_SPI 50 IRQ_TYPE_LEVEL_HIGH>;
+                interrupt-names = "vdec_mmu";
+                clocks = <&cru ACLK_VPU>, <&cru HCLK_VPU>;
+                clock-names = "aclk", "iface";
+                power-domains = <&power PX30_PD_VPU>;
+                #iommu-cells = <0>;
+                status = "okay";
+        };
+
+        vpu: video-codec@ff442000 {
+                compatible = "rockchip,px30-vpu","rockchip,rk3399-vpu";
+                reg = <0x0 0xff442000 0x0 0x400>;
+                interrupts = <GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>,
+                                <GIC_SPI 79 IRQ_TYPE_LEVEL_HIGH>;
+                interrupt-names = "vepu", "vdpu";
+                clocks = <&cru ACLK_VPU>, <&cru HCLK_VPU>;
+                clock-names = "aclk", "hclk";
+                power-domains = <&power PX30_PD_VPU>;
+                iommus = <&vpu_mmu>;
+                status = "okay";
+        };
+
+        vpu_mmu: iommu@ff442800 {
+                compatible = "rockchip,iommu";
+                reg = <0x0 0xff442800 0x0 0x100>;
+                interrupts = <GIC_SPI 81 IRQ_TYPE_LEVEL_HIGH>;
+                interrupt-names = "vpu_mmu";
+                clocks = <&cru ACLK_VPU>, <&cru HCLK_VPU>;
+                clock-names = "aclk", "iface";
+                #iommu-cells = <0>;
+                power-domains = <&power PX30_PD_VPU>;
+                status = "okay";
+        };
 };
 
 &cpu0 {
