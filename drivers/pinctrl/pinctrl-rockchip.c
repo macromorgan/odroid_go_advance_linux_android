@@ -3963,7 +3963,6 @@ static int rockchip_interrupts_register(struct platform_device *pdev,
 
 		irq_set_chained_handler_and_data(bank->irq,
 						 rockchip_irq_demux, bank);
-
 		clk_disable(bank->clk);
 	}
 
