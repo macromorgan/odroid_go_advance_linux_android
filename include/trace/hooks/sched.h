@@ -92,14 +92,38 @@ DECLARE_RESTRICTED_HOOK(android_rvh_sched_nohz_balancer_kick,
 
 DECLARE_RESTRICTED_HOOK(android_rvh_find_busiest_queue,
 	TP_PROTO(int dst_cpu, struct sched_group *group,
-		 struct rq **busiest, int *done),
-	TP_ARGS(dst_cpu, group, busiest, done), 1);
+		 struct cpumask *env_cpus, struct rq **busiest,
+		 int *done),
+	TP_ARGS(dst_cpu, group, env_cpus, busiest, done), 1);
 
 DECLARE_RESTRICTED_HOOK(android_rvh_migrate_queued_task,
 	TP_PROTO(struct rq *rq, struct rq_flags *rf,
 		 struct task_struct *p, int new_cpu,
 		 int *detached),
 	TP_ARGS(rq, rf, p, new_cpu, detached), 1);
+
+DECLARE_RESTRICTED_HOOK(android_rvh_find_energy_efficient_cpu,
+	TP_PROTO(struct task_struct *p, int prev_cpu, int sync, int *new_cpu),
+	TP_ARGS(p, prev_cpu, sync, new_cpu), 1);
+struct sched_attr;
+DECLARE_HOOK(android_vh_set_sugov_sched_attr,
+	TP_PROTO(struct sched_attr *attr),
+	TP_ARGS(attr));
+DECLARE_RESTRICTED_HOOK(android_rvh_set_iowait,
+	TP_PROTO(struct task_struct *p, int *should_iowait_boost),
+	TP_ARGS(p, should_iowait_boost), 1);
+struct sugov_policy;
+DECLARE_RESTRICTED_HOOK(android_rvh_set_sugov_update,
+	TP_PROTO(struct sugov_policy *sg_policy, unsigned int next_freq, bool *should_update),
+	TP_ARGS(sg_policy, next_freq, should_update), 1);
+DECLARE_RESTRICTED_HOOK(android_rvh_sched_setaffinity,
+	TP_PROTO(struct task_struct *p, const struct cpumask *in_mask, int *retval),
+	TP_ARGS(p, in_mask, retval), 1);
+
+DECLARE_RESTRICTED_HOOK(android_rvh_update_cpus_allowed,
+	TP_PROTO(struct task_struct *p, cpumask_var_t cpus_requested,
+		 const struct cpumask *new_mask, int *ret),
+	TP_ARGS(p, cpus_requested, new_mask, ret), 1);
 #else
 #define trace_android_rvh_select_task_rq_fair(p, prev_cpu, sd_flag, wake_flags, new_cpu)
 #define trace_android_rvh_select_task_rq_rt(p, prev_cpu, sd_flag, wake_flags, new_cpu)
@@ -119,8 +143,14 @@ DECLARE_RESTRICTED_HOOK(android_rvh_migrate_queued_task,
 #define trace_android_vh_jiffies_update(unused)
 #define trace_android_rvh_sched_newidle_balance(this_rq, rf, pulled_task, done)
 #define trace_android_rvh_sched_nohz_balancer_kick(rq, flags, done)
-#define trace_android_rvh_find_busiest_queue(dst_cpu, group, busiest, done)
+#define trace_android_rvh_find_busiest_queue(dst_cpu, group, env_cpus, busiest, done)
 #define trace_android_rvh_migrate_queued_task(rq, rf, p, new_cpu, detached)
+#define trace_android_rvh_find_energy_efficient_cpu(p, prev_cpu, sync, new_cpu)
+#define trace_android_vh_set_sugov_sched_attr(attr)
+#define trace_android_rvh_set_iowait(p, should_iowait_boost)
+#define trace_android_rvh_set_sugov_update(sg_policy, next_freq, should_update)
+#define trace_android_rvh_sched_setaffinity(p, in_mask, retval)
+#define trace_android_rvh_update_cpus_allowed(p, cpus_requested, new_mask, ret)
 #endif
 #endif /* _TRACE_HOOK_SCHED_H */
 /* This part must be outside protection */
