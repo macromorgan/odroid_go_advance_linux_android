@@ -6783,11 +6783,14 @@ static struct task_struct *__pick_migrate_task(struct rq *rq)
  * Called with rq->lock held even though we'er in stop_machine() and
  * there's no concurrency possible, we hold the required locks anyway
  * because of lock validation efforts.
+ *
+ * force: if false, the function will skip CPU pinned kthreads.
  */
-static void migrate_tasks(struct rq *dead_rq, struct rq_flags *rf)
+static void migrate_tasks(struct rq *dead_rq, struct rq_flags *rf, bool force)
 {
 	struct rq *rq = dead_rq;
-	struct task_struct *next, *stop = rq->stop;
+	struct task_struct *next, *tmp, *stop = rq->stop;
+	LIST_HEAD(percpu_kthreads);
 	struct rq_flags orf = *rf;
 	int dest_cpu;
 
@@ -6820,6 +6823,18 @@ static void migrate_tasks(struct rq *dead_rq, struct rq_flags *rf)
 		next = __pick_migrate_task(rq);
 
 		/*
+		 * Argh ... no iterator for tasks, we need to remove the
+		 * kthread from the run-queue to continue.
+		 */
+		if (!force && is_per_cpu_kthread(next)) {
+			INIT_LIST_HEAD(&next->percpu_kthread_node);
+			list_add(&next->percpu_kthread_node, &percpu_kthreads);
+			deactivate_task(rq, next,
+					DEQUEUE_NOCLOCK | DEQUEUE_SAVE);
+			continue;
+		}
+
+		/*
 		 * Rules for changing task_struct::cpus_mask are holding
 		 * both pi_lock and rq->lock, such that holding either
 		 * stabilizes the mask.
@@ -6837,7 +6852,14 @@ static void migrate_tasks(struct rq *dead_rq, struct rq_flags *rf)
 		 * changed the task, WARN if weird stuff happened, because in
 		 * that case the above rq->lock drop is a fail too.
 		 */
-		if (WARN_ON(task_rq(next) != rq || !task_on_rq_queued(next))) {
+		if (task_rq(next) != rq || !task_on_rq_queued(next)) {
+			/*
+			 * In the !force case, there is a hole between
+			 * rq_unlock() and rq_relock(), where another CPU might
+			 * not observe an up to date cpu_active_mask and try to
+			 * move tasks around.
+			 */
+			WARN_ON(force);
 			raw_spin_unlock(&next->pi_lock);
 			continue;
 		}
@@ -6852,6 +6874,12 @@ static void migrate_tasks(struct rq *dead_rq, struct rq_flags *rf)
 			rq_relock(rq, rf);
 		}
 		raw_spin_unlock(&next->pi_lock);
+	}
+
+	list_for_each_entry_safe(next, tmp, &percpu_kthreads,
+				 percpu_kthread_node) {
+		activate_task(rq, next, ENQUEUE_NOCLOCK | ENQUEUE_RESTORE);
+		list_del(&next->percpu_kthread_node);
 	}
 
 	rq->stop = stop;
@@ -6936,6 +6964,40 @@ static int cpuset_cpu_inactive(unsigned int cpu)
 	return 0;
 }
 
+static int drain_rq_cpu_stop(void *data)
+{
+	struct rq *rq = this_rq();
+	struct rq_flags rf;
+
+	rq_lock_irqsave(rq, &rf);
+	migrate_tasks(rq, &rf, false);
+	rq_unlock_irqrestore(rq, &rf);
+
+	return 0;
+}
+
+int sched_cpu_drain_rq(unsigned int cpu)
+{
+	struct cpu_stop_work *rq_drain = &(cpu_rq(cpu)->drain);
+	struct cpu_stop_done *rq_drain_done = &(cpu_rq(cpu)->drain_done);
+
+	if (idle_cpu(cpu)) {
+		rq_drain->done = NULL;
+		return 0;
+	}
+
+	return stop_one_cpu_async(cpu, drain_rq_cpu_stop, NULL, rq_drain,
+				  rq_drain_done);
+}
+
+void sched_cpu_drain_rq_wait(unsigned int cpu)
+{
+	struct cpu_stop_work *rq_drain = &(cpu_rq(cpu)->drain);
+
+	if (rq_drain->done)
+		cpu_stop_work_wait(rq_drain);
+}
+
 int sched_cpu_activate(unsigned int cpu)
 {
 	struct rq *rq = cpu_rq(cpu);
@@ -6971,22 +7033,32 @@ int sched_cpu_activate(unsigned int cpu)
 	}
 	rq_unlock_irqrestore(rq, &rf);
 
+	update_max_interval();
+
 	return 0;
 }
 
-int sched_cpu_deactivate(unsigned int cpu)
+int sched_cpus_activate(struct cpumask *cpus)
+{
+	unsigned int cpu;
+
+	for_each_cpu(cpu, cpus) {
+		if (sched_cpu_activate(cpu)) {
+			for_each_cpu_and(cpu, cpus, cpu_active_mask)
+				sched_cpu_deactivate(cpu);
+
+			return -EBUSY;
+		}
+	}
+
+	return 0;
+}
+
+int _sched_cpu_deactivate(unsigned int cpu)
 {
 	int ret;
 
 	set_cpu_active(cpu, false);
-	/*
-	 * We've cleared cpu_active_mask, wait for all preempt-disabled and RCU
-	 * users of this state to go away such that all new such users will
-	 * observe it.
-	 *
-	 * Do sync before park smpboot threads to take care the rcu boost case.
-	 */
-	synchronize_rcu();
 
 #ifdef CONFIG_SCHED_SMT
 	/*
@@ -7005,6 +7077,46 @@ int sched_cpu_deactivate(unsigned int cpu)
 		return ret;
 	}
 	sched_domains_numa_masks_clear(cpu);
+
+	update_max_interval();
+
+	return 0;
+}
+
+int sched_cpu_deactivate(unsigned int cpu)
+{
+	int ret = _sched_cpu_deactivate(cpu);
+
+	if (ret)
+		return ret;
+
+	/*
+	 * We've cleared cpu_active_mask, wait for all preempt-disabled and RCU
+	 * users of this state to go away such that all new such users will
+	 * observe it.
+	 *
+	 * Do sync before park smpboot threads to take care the rcu boost case.
+	 */
+	synchronize_rcu();
+
+	return 0;
+}
+
+int sched_cpus_deactivate_nosync(struct cpumask *cpus)
+{
+	unsigned int cpu;
+
+	for_each_cpu(cpu, cpus) {
+		if (_sched_cpu_deactivate(cpu)) {
+			for_each_cpu(cpu, cpus) {
+				if (!cpu_active(cpu))
+					sched_cpu_activate(cpu);
+			}
+
+			return -EBUSY;
+		}
+	}
+
 	return 0;
 }
 
@@ -7013,7 +7125,6 @@ static void sched_rq_cpu_starting(unsigned int cpu)
 	struct rq *rq = cpu_rq(cpu);
 
 	rq->calc_load_update = calc_load_update;
-	update_max_interval();
 }
 
 int sched_cpu_starting(unsigned int cpu)
@@ -7038,14 +7149,13 @@ int sched_cpu_dying(unsigned int cpu)
 		BUG_ON(!cpumask_test_cpu(cpu, rq->rd->span));
 		set_rq_offline(rq);
 	}
-	migrate_tasks(rq, &rf);
+	migrate_tasks(rq, &rf, true);
 	BUG_ON(rq->nr_running != 1);
 	rq_unlock_irqrestore(rq, &rf);
 
 	trace_android_rvh_sched_cpu_dying(cpu);
 
 	calc_load_migrate(rq);
-	update_max_interval();
 	nohz_balance_exit_idle(rq);
 	hrtick_clear(rq);
 	return 0;
