@@ -38,6 +38,7 @@
  * (default: 6ms * (1 + ilog(ncpus)), units: nanoseconds)
  */
 unsigned int sysctl_sched_latency			= 6000000ULL;
+EXPORT_SYMBOL_GPL(sysctl_sched_latency);
 static unsigned int normalized_sysctl_sched_latency	= 6000000ULL;
 
 /*
@@ -4136,7 +4137,7 @@ place_entity(struct cfs_rq *cfs_rq, struct sched_entity *se, int initial)
 			thresh >>= 1;
 
 		vruntime -= thresh;
-		trace_android_rvh_place_entity(se, vruntime);
+		trace_android_rvh_place_entity(se, &vruntime);
 	}
 
 	/* ensure we never gain time by being placed backwards. */

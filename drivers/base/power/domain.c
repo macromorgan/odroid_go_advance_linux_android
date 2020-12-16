@@ -408,6 +408,46 @@ int dev_pm_genpd_set_performance_state(struct device *dev, unsigned int state)
 }
 EXPORT_SYMBOL_GPL(dev_pm_genpd_set_performance_state);
 
+/**
+ * dev_pm_genpd_set_next_wakeup - Notify PM framework of an impending wakeup.
+ *
+ * @dev: Device to handle
+ * @next: impending interrupt/wakeup for the device
+ *
+ * Allow devices to inform of the next wakeup. But, if the domain were already
+ * powered off, we will not wakeup the domain to recompute it's idle duration.
+ * Although devices are expected to update the next_wakeup after the end of
+ * their usecase as well, it is possible the devices themselves may not know
+ * about that. Stale @next will be ignored when powering off the domain.
+ */
+int dev_pm_genpd_set_next_wakeup(struct device *dev, ktime_t next)
+{
+	struct generic_pm_domain *genpd;
+	struct generic_pm_domain_data *gpd_data;
+	int ret = -EINVAL;
+
+	genpd = dev_to_genpd_safe(dev);
+	if (!genpd)
+		return -ENODEV;
+
+	if (WARN_ON(!dev->power.subsys_data ||
+		    !dev->power.subsys_data->domain_data))
+		return ret;
+
+	genpd_lock(genpd);
+	gpd_data = to_gpd_data(dev->power.subsys_data->domain_data);
+	if (ktime_before(ktime_get(), next)) {
+		gpd_data->next_wakeup = next;
+		genpd->flags |= GENPD_FLAG_GOV_NEXT_WAKEUP;
+		ret = 0;
+	}
+	genpd_unlock(genpd);
+
+	return ret;
+}
+EXPORT_SYMBOL_GPL(dev_pm_genpd_set_next_wakeup);
+
+
 static int _genpd_power_on(struct generic_pm_domain *genpd, bool timed)
 {
 	unsigned int state_idx = genpd->state_idx;
@@ -1450,6 +1490,7 @@ static struct generic_pm_domain_data *genpd_alloc_dev_data(struct device *dev)
 	gpd_data->td.constraint_changed = true;
 	gpd_data->td.effective_constraint_ns = PM_QOS_RESUME_LATENCY_NO_CONSTRAINT_NS;
 	gpd_data->nb.notifier_call = genpd_dev_pm_qos_notifier;
+	gpd_data->next_wakeup = KTIME_MAX;
 
 	spin_lock_irq(&dev->power.lock);
 
@@ -1747,6 +1788,24 @@ int dev_pm_genpd_remove_notifier(struct device *dev)
 	return 0;
 }
 EXPORT_SYMBOL_GPL(dev_pm_genpd_remove_notifier);
+
+/**
+ * genpd_enable_next_wakeup - Enable genpd gov to use next_wakeup
+ *
+ * @genpd: The genpd to be updated
+ * @enable: Enable/disable genpd gov to use next wakeup
+ */
+void genpd_enable_next_wakeup(struct generic_pm_domain *genpd, bool enable)
+{
+	genpd_lock(genpd);
+	if (enable)
+		genpd->flags |= GENPD_FLAG_GOV_NEXT_WAKEUP;
+	else
+		genpd->flags &= ~GENPD_FLAG_GOV_NEXT_WAKEUP;
+	genpd->next_wakeup = KTIME_MAX;
+	genpd_unlock(genpd);
+}
+EXPORT_SYMBOL_GPL(genpd_enable_next_wakeup);
 
 static int genpd_add_subdomain(struct generic_pm_domain *genpd,
 			       struct generic_pm_domain *subdomain)
