@@ -293,9 +293,9 @@ int request_init_conf(void)
 	u8 *conf_buf;
 	u8 *pbuf;
 	int flag;
-	int str_len;	
+	int str_len;
 	int length;
-	int ret;
+	int ret = 0;
 	int i;
 	char attr_name[CONF_ATTR_LEN];
 	char num_buf[CONF_VAL_LEN];
@@ -391,7 +391,7 @@ int request_init_conf(void)
 			if (++str_len > CONF_VAL_LEN) {
 				esp_dbg(ESP_DBG_ERROR, "%s: value len is too long", __FUNCTION__);
 				goto failed;
-			}	
+			}
 		}
 	}
 

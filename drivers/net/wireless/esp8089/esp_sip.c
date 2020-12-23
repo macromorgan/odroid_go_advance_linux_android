@@ -217,7 +217,7 @@ static void sip_recalc_credit_timeout(struct timer_list *list)
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4, 15, 0)
 	struct esp_sip *sip = (struct esp_sip *)data;
 #else
-	struct esp_sip *sip = (struct esp_sip *)list->flags;
+	struct esp_sip *sip = from_timer(sip, list, credit_timer);
 #endif
 
 	esp_dbg(ESP_DBG_ERROR, "rct");
