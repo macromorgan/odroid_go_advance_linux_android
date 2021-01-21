@@ -340,6 +340,10 @@
                         reg = <0x0 0x110000 0x0 0xf0000>;
                         reg-names = "ramoops_mem";
                 };
+		optee_reserved: external-abort@8400000 {
+			reg = <0 0x8400000 0 0x1e00000>;
+			no-map;
+		};
         };
 
 	spi_gpio: spi {
