@@ -14,6 +14,30 @@
 	model = "ODROID-GO Advance";
 	compatible = "hardkernel,rk3326-odroid-go2", "rockchip,rk3326";
 
+	adc-joystick {
+		compatible = "adc-joystick";
+		io-channels = <&saradc 1>,
+			      <&saradc 2>;
+		#address-cells = <1>;
+		#size-cells = <0>;
+
+		axis@0 {
+			reg = <0>;
+			abs-flat = <10>;
+			abs-fuzz = <10>;
+			abs-range = <172 772>;
+			linux,code = <ABS_X>;
+		};
+
+		axis@1 {
+			reg = <1>;
+			abs-flat = <10>;
+			abs-fuzz = <10>;
+			abs-range = <278 815>;
+			linux,code = <ABS_Y>;
+		};
+	};
+
 	aliases {
 		ethernet0 = &gmac;
 		i2c0 = &i2c0;
@@ -115,21 +139,10 @@
 		};
 	};
 
-	joypad: odroidgo2-joypad {
-		compatible = "odroidgo2-joypad";
+	gpio_keys: gpio-keys {
+		compatible = "gpio-keys";
 		pinctrl-names = "default";
 		pinctrl-0 = <&btn_pins>;
-		io-channel-names = "joy_x", "joy_y";
-		io-channels = <&saradc 1>, <&saradc 2>;
-		button-adc-count = <2>;
-		button-adc-scale = <2>;
-		button-adc-deadzone = <20>;
-		button-adc-x-range = <1800>;
-		button-adc-y-range = <1800>;
-		button-adc-fuzz = <32>;
-		button-adc-flat = <32>;
-		poll-interval = <10>;
-		autorepeat;
 
 		/*
 		 *      *** ODROIDGO2-Advance Switch layout ***
