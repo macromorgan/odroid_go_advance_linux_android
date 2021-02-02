@@ -1,0 +1,98 @@
+// SPDX-License-Identifier: (GPL-2.0+ OR MIT)
+/*
+ * Copyright (c) 2020 Fuzhou Rockchip Electronics Co., Ltd
+ */
+
+#include "rk3326-odroid-go2.dtsi"
+
+&backlight {
+	pwms = <&pwm1 0 40000 0>;
+	power-supply = <&vcc_lcd>;
+	brightness-levels = <
+		  0   1   2   3   4   5   6   7
+		  8   9  10  11  12  13  14  15
+		 16  17  18  19  20  21  22  23
+		 24  25  26  27  28  29  30  31
+		 32  33  34  35  36  37  38  39
+		 40  41  42  43  44  45  46  47
+		 48  49  50  51  52  53  54  55
+		 56  57  58  59  60  61  62  63
+		 64  65  66  67  68  69  70  71
+		 72  73  74  75  76  77  78  79
+		 80  81  82  83  84  85  86  87
+		 88  89  90  91  92  93  94  95
+		 96  97  98  99 100 101 102 103
+		104 105 106 107 108 109 110 111
+		112 113 114 115 116 117 118 119
+		120 121 122 123 124 125 126 127
+		128 129 130 131 132 133 134 135
+		136 137 138 139 140 141 142 143
+		144 145 146 147 148 149 150 151
+		152 153 154 155 156 157 158 159
+		160 >;
+	default-brightness-level = <80>;
+};
+
+&chosen {
+	stdout-path = "serial1:115200n8";
+};
+
+&dsi {
+        panel@0 {
+		compatible = "elida,kd50t048a";
+		reg = <0>;
+		backlight = <&backlight>;
+		VCC-supply = <&vcc_lcd>;
+		IOVCC-supply = <&vcc_lcd>;
+		reset-gpios = <&gpio3 RK_PC0 GPIO_ACTIVE_LOW>;
+
+		port {
+			dsi_in_panel: endpoint {
+				remote-endpoint = <&dsi_out_panel>;
+			};
+		};
+	};
+};
+
+&gpio_keys {
+	sw9 {
+		gpios = <&gpio2 RK_PA0 GPIO_ACTIVE_LOW>;
+		label = "BTN-VOLUP";
+		linux,code = <KEY_VOLUMEUP>;
+	};
+	sw10 {
+		gpios = <&gpio2 RK_PA1 GPIO_ACTIVE_LOW>;
+		label = "BTN-VOLDOWN";
+		linux,code = <KEY_VOLUMEDOWN>;
+	};
+	sw19 {
+		gpios = <&gpio3 RK_PB1 GPIO_ACTIVE_LOW>;
+		label = "F1";
+		linux,code = <BTN_TRIGGER_HAPPY1>;
+	};
+	sw20 {
+		gpios = <&gpio3 RK_PB7 GPIO_ACTIVE_LOW>;
+		label = "TOP-RIGHT2";
+		linux,code = <BTN_TR2>;
+	};
+
+	sw21 {
+		gpios = <&gpio3 RK_PB2 GPIO_ACTIVE_LOW>;
+		label = "TOP-LEFT2";
+		linux,code = <BTN_TL2>;
+	};
+	sw22 {
+		gpios = <&gpio3 RK_PB4 GPIO_ACTIVE_LOW>;
+		label = "F2";
+		linux,code = <BTN_TRIGGER_HAPPY2>;
+        };
+};
+
+&vcc_lcd {
+	regulator-min-microvolt = <3300000>;
+	regulator-max-microvolt = <3300000>;
+	regulator-state-mem {
+		regulator-off-in-suspend;
+		regulator-suspend-microvolt = <3300000>;
+	};
+};
