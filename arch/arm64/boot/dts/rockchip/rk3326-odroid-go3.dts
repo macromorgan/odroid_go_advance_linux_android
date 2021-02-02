@@ -45,6 +45,7 @@
 		VCC-supply = <&vcc_lcd>;
 		IOVCC-supply = <&vcc_lcd>;
 		reset-gpios = <&gpio3 RK_PC0 GPIO_ACTIVE_LOW>;
+		rotation = <270>;
 
 		port {
 			dsi_in_panel: endpoint {
