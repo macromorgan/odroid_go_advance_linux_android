@@ -38,24 +38,6 @@
 		};
 	};
 
-	aliases {
-		ethernet0 = &gmac;
-		i2c0 = &i2c0;
-		i2c1 = &i2c1;
-		i2c2 = &i2c2;
-		i2c3 = &i2c3;
-		mmc0 = &sdmmc;
-		mmc1 = &sdio;
-		serial0 = &uart0;
-		serial1 = &uart1;
-		serial2 = &uart2;
-		serial3 = &uart3;
-		serial4 = &uart4;
-		serial5 = &uart5;
-		spi0 = &spi0;
-		spi1 = &spi1;
-	};
-
 	backlight: backlight {
 		compatible = "pwm-backlight";
 		power-supply = <&vcc_bl>;
@@ -378,30 +360,30 @@
 		};
 	};
 
-        vpu: video-codec@ff442000 {
-                compatible = "rockchip,px30-vpu","rockchip,rk3399-vpu";
-                reg = <0x0 0xff442000 0x0 0x800>;
-                interrupts = <GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>,
-                                <GIC_SPI 79 IRQ_TYPE_LEVEL_HIGH>;
-                interrupt-names = "vepu", "vdpu";
-                clocks = <&cru ACLK_VPU>, <&cru HCLK_VPU>;
-                clock-names = "aclk", "hclk";
-                power-domains = <&power PX30_PD_VPU>;
-                iommus = <&vpu_mmu>;
-                status = "okay";
-        };
+	vpu: video-codec@ff442000 {
+		compatible = "rockchip,px30-vpu","rockchip,rk3399-vpu";
+		reg = <0x0 0xff442000 0x0 0x800>;
+		interrupts = <GIC_SPI 80 IRQ_TYPE_LEVEL_HIGH>,
+			<GIC_SPI 79 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "vepu", "vdpu";
+		clocks = <&cru ACLK_VPU>, <&cru HCLK_VPU>, <&cru SCLK_CORE_VPU>;
+		clock-names = "aclk", "hclk", "sclk";
+		power-domains = <&power PX30_PD_VPU>;
+		iommus = <&vpu_mmu>;
+		status = "okay";
+	};
 
-        vpu_mmu: iommu@ff442800 {
-                compatible = "rockchip,iommu";
-                reg = <0x0 0xff442800 0x0 0x100>;
-                interrupts = <GIC_SPI 81 IRQ_TYPE_LEVEL_HIGH>;
-                interrupt-names = "vpu_mmu";
-                clocks = <&cru ACLK_VPU>, <&cru HCLK_VPU>;
-                clock-names = "aclk", "iface";
-                #iommu-cells = <0>;
-                power-domains = <&power PX30_PD_VPU>;
-                status = "okay";
-        };
+	vpu_mmu: iommu@ff442800 {
+		compatible = "rockchip,iommu";
+		reg = <0x0 0xff442800 0x0 0x100>;
+		interrupts = <GIC_SPI 81 IRQ_TYPE_LEVEL_HIGH>;
+		interrupt-names = "vpu_mmu";
+		clocks = <&cru ACLK_VPU>, <&cru HCLK_VPU>;
+		clock-names = "aclk", "iface";
+		#iommu-cells = <0>;
+		power-domains = <&power PX30_PD_VPU>;
+		status = "okay";
+	};
 };
 
 &cpu0 {
