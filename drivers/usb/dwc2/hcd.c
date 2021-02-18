@@ -4324,6 +4324,11 @@ static int _dwc2_hcd_suspend(struct usb_hcd *hcd)
 	if (hsotg->params.power_down > DWC2_POWER_DOWN_PARAM_PARTIAL)
 		goto skip_power_saving;
 
+	if (!hsotg->hw_params.hibernation) {
+		dwc2_hsotg_disconnect(hsotg);
+		goto skip_power_saving;
+}
+
 	/*
 	 * Drive USB suspend and disable port Power
 	 * if usb bus is not suspended.
@@ -4385,11 +4390,33 @@ static int _dwc2_hcd_resume(struct usb_hcd *hcd)
 
 	spin_lock_irqsave(&hsotg->lock, flags);
 
-	if (dwc2_is_device_mode(hsotg))
-		goto unlock;
+	if (dwc2_is_device_mode(hsotg)) {
+		hsotg->lx_state = DWC2_L0;
+		spin_unlock_irqrestore(&hsotg->lock, flags);
+		msleep(200);
 
-	if (hsotg->lx_state != DWC2_L2)
-		goto unlock;
+		hsotg->op_state = OTG_STATE_A_HOST;
+		if (dwc2_core_init(hsotg, true)) {
+			return ret;
+		}
+		dwc2_enable_global_interrupts(hsotg);
+		dwc2_hcd_start(hsotg);
+		return ret;
+	}
+
+	if (hsotg->lx_state != DWC2_L2) {
+	    hsotg->lx_state = DWC2_L0;
+		spin_unlock_irqrestore(&hsotg->lock, flags);
+		msleep(200);
+
+		hsotg->op_state = OTG_STATE_A_HOST;
+		if (dwc2_core_init(hsotg, true)) {
+            return ret;
+        }
+		dwc2_enable_global_interrupts(hsotg);
+		dwc2_hcd_start(hsotg);
+        return ret;
+    }
 
 	if (hsotg->params.power_down > DWC2_POWER_DOWN_PARAM_PARTIAL) {
 		hsotg->lx_state = DWC2_L0;

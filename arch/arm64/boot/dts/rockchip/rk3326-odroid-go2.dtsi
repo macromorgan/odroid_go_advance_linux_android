@@ -913,16 +913,17 @@
 	status = "okay";
 
 	u2phy_host: host-port {
-		status = "okay";
+		status = "disabled";
 	};
 
 	u2phy_otg: otg-port {
-		status = "disabled";
+		status = "okay";
 	};
 };
 
 &usb20_otg {
 	status = "okay";
+	dr_mode = "host";
 };
 
 /* EXT Header(P2): 2(RXD:GPIO1.C0),3(TXD:.C1),4(CTS:.C2),5(RTS:.C3) */
