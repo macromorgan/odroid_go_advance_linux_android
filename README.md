@@ -1,3 +1,5 @@
+Note, this repository is now marked archived. I have been working to upstream as much as possible into mainline kernels, and you should be using those now instead of an older/unmaintained fork.
+
 # How do I submit patches to Android Common Kernels
 
 1. BEST: Make all of your changes to upstream Linux. If appropriate, backport to the stable releases.
